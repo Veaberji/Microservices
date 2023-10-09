@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using PlatformService.Dtos;
 
 namespace CommandsService.Controllers;
 
@@ -6,9 +7,9 @@ namespace CommandsService.Controllers;
 [ApiController]
 public class PlatformsController : ControllerBase
 {
-    [HttpPost("Test")]
-    public string Test()
+    [HttpPost("PlatformCreated")]
+    public void PlatformCreated(PlatformDto platform)
     {
-        return "a";
+        Console.WriteLine($"Platform Created, {platform.Id}:{platform.Name}");
     }
 }

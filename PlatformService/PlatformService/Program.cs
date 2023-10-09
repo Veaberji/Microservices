@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using PlatformService.Data;
+using PlatformService.SyncDataServices.Http;
 
 var builder = WebApplication.CreateBuilder(args);
 var services = builder.Services;
@@ -11,6 +12,7 @@ services.AddSwaggerGen();
 services.AddDbContext<AppDbContext>(opt => opt.UseInMemoryDatabase("InMemory"));
 services.AddScoped<IPlatformRepository, PlatformRepository>();
 services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+services.AddHttpClient<ICommandDataClient, CommandDataClient>();
 
 var app = builder.Build();
 
