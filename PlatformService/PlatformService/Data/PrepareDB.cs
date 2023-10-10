@@ -1,17 +1,23 @@
-﻿using PlatformService.Models;
+﻿using Microsoft.EntityFrameworkCore;
+using PlatformService.Models;
 
 namespace PlatformService.Data;
 
 public static class PrepareDB
 {
-    public static async Task PopulateAsync(this WebApplication app)
+    public static async Task PopulateAsync(this WebApplication app, bool isProduction)
     {
         using var scope = app.Services.CreateScope();
-        await SeedDataAsync(scope.ServiceProvider.GetService<AppDbContext>());
+        await SeedDataAsync(scope.ServiceProvider.GetService<AppDbContext>(), isProduction);
     }
 
-    private static async Task SeedDataAsync(AppDbContext context)
+    private static async Task SeedDataAsync(AppDbContext context, bool isProduction)
     {
+        if (isProduction)
+        {
+            await context.Database.MigrateAsync();
+        }
+
         if (context.Platforms.Any())
         {
             return;

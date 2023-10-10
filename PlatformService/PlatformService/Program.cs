@@ -9,7 +9,15 @@ services.AddControllers();
 services.AddEndpointsApiExplorer();
 services.AddSwaggerGen();
 
-services.AddDbContext<AppDbContext>(opt => opt.UseInMemoryDatabase("InMemory"));
+if (builder.Environment.IsDevelopment())
+{
+    services.AddDbContext<AppDbContext>(opt => opt.UseInMemoryDatabase("InMemory"));
+}
+else
+{
+    services.AddDbContext<AppDbContext>(
+        opt => opt.UseSqlServer(builder.Configuration.GetConnectionString("Platforms")));
+}
 services.AddScoped<IPlatformRepository, PlatformRepository>();
 services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 services.AddHttpClient<ICommandDataClient, CommandDataClient>();
@@ -29,6 +37,6 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-await PrepareDB.PopulateAsync(app);
+await PrepareDB.PopulateAsync(app, app.Environment.IsProduction());
 
 app.Run();
