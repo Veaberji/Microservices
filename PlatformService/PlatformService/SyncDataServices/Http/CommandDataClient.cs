@@ -24,4 +24,18 @@ public class CommandDataClient : ICommandDataClient
 
         await _http.PostAsync($"{_config["CommandService"]}", content);
     }
+    public static string Rgb(int r, int g, int b)
+    {
+        return $"{ToHex(Round(r))}{ToHex(Round(g))}{ToHex(Round(b))}";
+    }
+
+    private static int Round(int number)
+    {
+        number = number < 0 ? 0 : number;
+        return number > 255 ? 255 : number;
+    }
+    private static string ToHex(int number)
+    {
+        return number.ToString("X2");
+    }
 } 
