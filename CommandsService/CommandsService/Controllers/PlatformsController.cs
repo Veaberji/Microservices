@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using PlatformService.Dtos;
+﻿using AutoMapper;
+using CommandsService.Dtos;
+using Microsoft.AspNetCore.Mvc;
+using PlatformService.Data;
 
 namespace CommandsService.Controllers;
 
@@ -7,8 +9,27 @@ namespace CommandsService.Controllers;
 [ApiController]
 public class PlatformsController : ControllerBase
 {
-    [HttpPost("PlatformCreated")]
-    public void PlatformCreated(PlatformDto platform)
+    private readonly ICommandRepository _repository;
+    private readonly IMapper _mapper;
+
+    public PlatformsController(
+        ICommandRepository repository,
+        IMapper mapper)
+    {
+        _repository = repository;
+        _mapper = mapper;
+    }
+
+    [Route("platforms")]
+    [HttpGet]
+    public async Task<IEnumerable<PlatformReadDto>> GetPlatforms()
+    {
+        return _mapper.Map<IEnumerable<PlatformReadDto>>(await _repository.GetAllPlatformsAsync());
+    }
+
+    [Route("platformCreated")]
+    [HttpPost]
+    public void PlatformCreated(PlatformReadDto platform)
     {
         Console.WriteLine($"Platform Created, {platform.Id}:{platform.Name}");
     }
