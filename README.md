@@ -14,3 +14,4 @@ Install Docker and K8S. Run commands inside the K8S folder:
 - `kubectl apply -f local-pvc.yaml`
 - `kubectl create secret generic mssql --from-literal=SA_PASSWORD="12345678D!"`
 - `kubectl apply -f mssql-plat-deploy.yaml`
+- `kubectl apply -f rabbitmq-deploy.yaml`
