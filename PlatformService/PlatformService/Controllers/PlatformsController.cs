@@ -1,9 +1,9 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using PlatformService.AsyncDataServices;
 using PlatformService.Data;
 using PlatformService.Dtos;
 using PlatformService.Models;
-using PlatformService.SyncDataServices.Http;
 
 namespace PlatformService.Controllers;
 
@@ -13,16 +13,16 @@ public class PlatformsController : ControllerBase
 {
     private readonly IPlatformRepository _repository;
     private readonly IMapper _mapper;
-    private readonly ICommandDataClient _commandClient;
+    private readonly IMessageBusClient _messageBus;
 
     public PlatformsController(
         IPlatformRepository repository,
         IMapper mapper,
-        ICommandDataClient commandClient)
+        IMessageBusClient messageBus)
     {
         _repository = repository;
         _mapper = mapper;
-        _commandClient = commandClient;
+        _messageBus = messageBus;
     }
 
     [HttpGet("AllPlatforms")]
@@ -50,7 +50,9 @@ public class PlatformsController : ControllerBase
 
         var result = _mapper.Map<PlatformReadDto>(platform);
 
-        await _commandClient.SendPlatformToCommand(result);
+        var publishedPlatform = _mapper.Map<PlatformPublishDto>(result);
+        publishedPlatform.Event = "Platform Published";
+        _messageBus.PublishPlatform(publishedPlatform);
 
         return result;
     }
