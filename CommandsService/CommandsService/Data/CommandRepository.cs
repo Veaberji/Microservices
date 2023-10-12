@@ -38,6 +38,11 @@ public class CommandRepository : ICommandRepository
         return await _context.Commands.Where(c => c.PlatformId == platformId).ToArrayAsync();
     }
 
+    public async Task<bool> IsExternalPlatformExistsAsync(int id)
+    {
+        return await _context.Commands.AnyAsync(c => c.Id == id);
+    }
+
     public async Task<bool> SaveChangesAsync()
     {
         return await _context.SaveChangesAsync() > 0;

@@ -50,7 +50,7 @@ public class PlatformsController : ControllerBase
 
         var result = _mapper.Map<PlatformReadDto>(platform);
 
-        var publishedPlatform = _mapper.Map<PlatformPublishDto>(result);
+        var publishedPlatform = _mapper.Map<PlatformPublishedDto>(result);
         publishedPlatform.Event = "Platform Published";
         _messageBus.PublishPlatform(publishedPlatform);
 

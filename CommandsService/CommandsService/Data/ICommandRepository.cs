@@ -14,5 +14,7 @@ public interface ICommandRepository
 
     Task<Command> GetCommandAsync(int id);
 
+    Task<bool> IsExternalPlatformExistsAsync(int id);
+
     Task<bool> SaveChangesAsync();
 }

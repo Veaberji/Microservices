@@ -1,35 +1,27 @@
-﻿using PlatformService.Dtos;
+﻿using CommandsService.EventProcessing;
 using RabbitMQ.Client;
+using RabbitMQ.Client.Events;
 using System.Text;
-using System.Text.Json;
 
-namespace PlatformService.AsyncDataServices;
+namespace CommandsService.AsyncDataServices;
 
-public class MessageBusClient : IMessageBusClient, IDisposable
+public class MessageBusSubscriber : BackgroundService, IDisposable
 {
     private const string Exchange = "trigger";
 
     private bool _isDisposed;
 
     private readonly IConfiguration _config;
+    private readonly IEventProcessor _eventProcessor;
     private IConnection _connectiion;
     private IModel _channel;
+    private string _queueName;
 
-    public MessageBusClient(IConfiguration config)
+    public MessageBusSubscriber(IConfiguration config, IEventProcessor eventProcessor)
     {
         _config = config;
+        _eventProcessor = eventProcessor;
         Init();
-    }
-
-    public void PublishPlatform(PlatformPublishedDto platform)
-    {
-        var message = JsonSerializer.Serialize(platform);
-
-        if (_connectiion.IsOpen)
-        {
-            var body = Encoding.UTF8.GetBytes(message);
-            _channel.BasicPublish(Exchange, string.Empty, null, body);
-        }
     }
 
     public void Dispose()
@@ -54,6 +46,19 @@ public class MessageBusClient : IMessageBusClient, IDisposable
             _isDisposed = true;
         }
     }
+
+    protected override Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        stoppingToken.ThrowIfCancellationRequested();
+
+        var consumer = new EventingBasicConsumer(_channel);
+        consumer.Received += MessageReceived;
+
+        _channel.BasicConsume(_queueName, true, consumer);
+
+        return Task.CompletedTask;
+    }
+
     private void Init()
     {
         var factory = new ConnectionFactory()
@@ -68,6 +73,9 @@ public class MessageBusClient : IMessageBusClient, IDisposable
             _channel = _connectiion.CreateModel();
 
             _channel.ExchangeDeclare(Exchange, ExchangeType.Fanout);
+            _queueName = _channel.QueueDeclare().QueueName;
+            _channel.QueueBind(_queueName, Exchange, string.Empty);
+
             _connectiion.ConnectionShutdown += ConnectionShutdown;
         }
         catch (Exception ex)
@@ -80,5 +88,12 @@ public class MessageBusClient : IMessageBusClient, IDisposable
     private void ConnectionShutdown(object? sender, ShutdownEventArgs e)
     {
         Console.WriteLine("ConnectionShutdown");
+    }
+
+
+    private void MessageReceived(object? sender, BasicDeliverEventArgs e)
+    {
+        var message = Encoding.UTF8.GetString(e.Body.ToArray());
+        _eventProcessor.ProcessEventAsync(message).Wait();
     }
 }

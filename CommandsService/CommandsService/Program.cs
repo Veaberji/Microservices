@@ -1,4 +1,6 @@
+using CommandsService.AsyncDataServices;
 using CommandsService.Data;
+using CommandsService.EventProcessing;
 using Microsoft.EntityFrameworkCore;
 using PlatformService.Data;
 
@@ -12,6 +14,9 @@ builder.Services.AddSwaggerGen();
 
 services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 services.AddScoped<ICommandRepository, CommandRepository>();
+services.AddSingleton<IEventProcessor, EventProcessor>();
+
+services.AddHostedService<MessageBusSubscriber>();
 
 services.AddDbContext<AppDbContext>(opt => opt.UseInMemoryDatabase("InMemory"));
 
