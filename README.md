@@ -15,3 +15,5 @@ Install Docker and K8S. Run commands inside the K8S folder:
 - `kubectl create secret generic mssql --from-literal=SA_PASSWORD="12345678D!"`
 - `kubectl apply -f mssql-plat-deploy.yaml`
 - `kubectl apply -f rabbitmq-deploy.yaml`
+
+Used Technologies: .NET Core, EF Core, SqlServer, Docker, K8S, ingress-nginx, RabbitMQ, gRPC.

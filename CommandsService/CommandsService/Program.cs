@@ -1,6 +1,7 @@
 using CommandsService.AsyncDataServices;
 using CommandsService.Data;
 using CommandsService.EventProcessing;
+using CommandsService.SyncDataServices.Grpc;
 using Microsoft.EntityFrameworkCore;
 using PlatformService.Data;
 
@@ -15,6 +16,7 @@ builder.Services.AddSwaggerGen();
 services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 services.AddScoped<ICommandRepository, CommandRepository>();
 services.AddSingleton<IEventProcessor, EventProcessor>();
+services.AddScoped<IPlatformDataClient, PlatformDataClient>();
 
 services.AddHostedService<MessageBusSubscriber>();
 
@@ -22,7 +24,6 @@ services.AddDbContext<AppDbContext>(opt => opt.UseInMemoryDatabase("InMemory"));
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -34,5 +35,7 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
+
+await PrepareDB.PopulateAsync(app, app.Environment.IsProduction());
 
 app.Run();
